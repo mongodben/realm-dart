@@ -116,7 +116,7 @@ class _RealmCore {
           final schemaProperty = schemaObject.properties[j];
           final propInfo = properties.elementAt(j).ref;
           propInfo.name = schemaProperty.name.toCharPtr(arena);
-          //TODO: assign the correct public name value.
+          //TODO: Assign the correct public name value https://github.com/realm/realm-dart/issues/697
           propInfo.public_name = "".toCharPtr(arena);
           propInfo.link_target = (schemaProperty.linkTarget ?? "").toCharPtr(arena);
           propInfo.link_origin_property_name = "".toCharPtr(arena);
@@ -397,7 +397,8 @@ class _RealmCore {
       config.initialDataCallback!(realm);
       return true;
     } catch (ex) {
-      // TODO: this should propagate the error to Core: https://github.com/realm/realm-core/issues/5366
+      // TODO: Propagate error to Core in initial_data_callback https://github.com/realm/realm-dart/issues/698
+      // Core issue: https://github.com/realm/realm-core/issues/5366
     }
 
     return false;
@@ -585,9 +586,9 @@ class _RealmCore {
   RealmResultsHandle queryClass(Realm realm, int classKey, String query, List<Object> args) {
     return using((arena) {
       final length = args.length;
-      final argsPointer = arena<realm_value_t>(length);
+      final argsPointer = arena<realm_query_arg_t>(length);
       for (var i = 0; i < length; ++i) {
-        _intoRealmValue(args[i], argsPointer.elementAt(i), arena);
+        _intoRealmQueryArg(args[i], argsPointer.elementAt(i), arena);
       }
       final queryHandle = RealmQueryHandle._(_realmLib.invokeGetPointer(
         () => _realmLib.realm_query_parse(
@@ -605,9 +606,9 @@ class _RealmCore {
   RealmResultsHandle queryResults(RealmResults target, String query, List<Object> args) {
     return using((arena) {
       final length = args.length;
-      final argsPointer = arena<realm_value_t>(length);
+      final argsPointer = arena<realm_query_arg_t>(length);
       for (var i = 0; i < length; ++i) {
-        _intoRealmValue(args[i], argsPointer.elementAt(i), arena);
+        _intoRealmQueryArg(args[i], argsPointer.elementAt(i), arena);
       }
       final queryHandle = RealmQueryHandle._(_realmLib.invokeGetPointer(
         () => _realmLib.realm_query_parse_for_results(
@@ -629,9 +630,9 @@ class _RealmCore {
   RealmResultsHandle queryList(RealmList target, String query, List<Object> args) {
     return using((arena) {
       final length = args.length;
-      final argsPointer = arena<realm_value_t>(length);
+      final argsPointer = arena<realm_query_arg_t>(length);
       for (var i = 0; i < length; ++i) {
-        _intoRealmValue(args[i], argsPointer.elementAt(i), arena);
+        _intoRealmQueryArg(args[i], argsPointer.elementAt(i), arena);
       }
       final queryHandle = RealmQueryHandle._(_realmLib.invokeGetPointer(
         () => _realmLib.realm_query_parse_for_list(
@@ -918,8 +919,8 @@ class _RealmCore {
     });
   }
 
-  RealmAppCredentialsHandle createAppCredentialsAnonymous() {
-    return RealmAppCredentialsHandle._(_realmLib.realm_app_credentials_new_anonymous());
+  RealmAppCredentialsHandle createAppCredentialsAnonymous(bool reuseCredentials) {
+    return RealmAppCredentialsHandle._(_realmLib.realm_app_credentials_new_anonymous(reuseCredentials));
   }
 
   RealmAppCredentialsHandle createAppCredentialsEmailPassword(String email, String password) {
@@ -934,6 +935,42 @@ class _RealmCore {
     return using((arena) {
       final tokenPtr = token.toCharPtr(arena);
       return RealmAppCredentialsHandle._(_realmLib.realm_app_credentials_new_jwt(tokenPtr));
+    });
+  }
+
+  RealmAppCredentialsHandle createAppCredentialsApple(String idToken) {
+    return using((arena) {
+      final idTokenPtr = idToken.toCharPtr(arena);
+      return RealmAppCredentialsHandle._(_realmLib.realm_app_credentials_new_apple(idTokenPtr));
+    });
+  }
+
+  RealmAppCredentialsHandle createAppCredentialsFacebook(String accessToken) {
+    return using((arena) {
+      final accessTokenPtr = accessToken.toCharPtr(arena);
+      return RealmAppCredentialsHandle._(_realmLib.realm_app_credentials_new_facebook(accessTokenPtr));
+    });
+  }
+
+  RealmAppCredentialsHandle createAppCredentialsGoogleIdToken(String idToken) {
+    return using((arena) {
+      final idTokenPtr = idToken.toCharPtr(arena);
+      return RealmAppCredentialsHandle._(_realmLib.realm_app_credentials_new_google_id_token(idTokenPtr));
+    });
+  }
+
+  RealmAppCredentialsHandle createAppCredentialsGoogleAuthCode(String authCode) {
+    return using((arena) {
+      final authCodePtr = authCode.toCharPtr(arena);
+      return RealmAppCredentialsHandle._(_realmLib.realm_app_credentials_new_google_auth_code(authCodePtr));
+    });
+  }
+  
+  RealmAppCredentialsHandle createAppCredentialsFunction(String payload) {
+    return using((arena) {
+      final payloadPtr = payload.toCharPtr(arena);
+      final credentialsPtr = _realmLib.invokeGetPointer(() => _realmLib.realm_app_credentials_new_function(payloadPtr));
+      return RealmAppCredentialsHandle._(credentialsPtr);
     });
   }
 
@@ -1048,7 +1085,6 @@ class _RealmCore {
 
         responseRef.custom_status_code = _CustomErrorCode.noError.code;
       } on SocketException catch (_) {
-        // TODO: A Timeout causes a socket exception, but not all socket exceptions are due to timeouts
         responseRef.custom_status_code = _CustomErrorCode.timeout.code;
       } on HttpException catch (_) {
         responseRef.custom_status_code = _CustomErrorCode.unknownHttp.code;
@@ -1416,7 +1452,8 @@ class _RealmCore {
 
   List<UserIdentity> userGetIdentities(User user) {
     return using((arena) {
-      //TODO: This approach is prone to race conditions. Fix this once Core changes how count is retrieved.
+      // TODO: Fix countIds in userGetIdentities once Core changes how count is retrieved. https://github.com/realm/realm-dart/issues/690
+      // This approach is prone to race conditions.
       final idsCount = arena<Size>();
       _realmLib.invokeGetBool(
           () => _realmLib.realm_user_get_all_identities(user.handle._pointer, nullptr, 0, idsCount), "Error while getting user identities count");
@@ -1829,6 +1866,13 @@ Pointer<realm_value_t> _toRealmValue(Object? value, Allocator allocator) {
 
 const int _microsecondsPerSecond = 1000 * 1000;
 const int _nanosecondsPerMicrosecond = 1000;
+
+void _intoRealmQueryArg(Object? value, Pointer<realm_query_arg_t> realm_query_arg, Allocator allocator) {
+  realm_query_arg.ref.arg = allocator<realm_value_t>();
+  realm_query_arg.ref.nb_args = 1;
+  realm_query_arg.ref.is_list = false;
+  _intoRealmValue(value, realm_query_arg.ref.arg, allocator);
+}
 
 void _intoRealmValue(Object? value, Pointer<realm_value_t> realm_value, Allocator allocator) {
   if (value == null) {

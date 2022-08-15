@@ -54,6 +54,9 @@ class BaasClient {
       return { status: 'fail' };
     }
   };''';
+  static const String _authFuncSource = '''exports = (loginPayload) => {
+    return loginPayload["userId"];
+  };''';
   static const String defaultAppName = "flexible";
 
   final String _baseUrl;
@@ -64,7 +67,6 @@ class BaasClient {
 
   late String _groupId;
   late String publicRSAKey = '';
-  late String jwksUrl = '';
 
   BaasClient._(String baseUrl, String? differentiator, [this._clusterName])
       : _baseUrl = '$baseUrl/api/admin/v3.0',
@@ -166,6 +168,7 @@ class BaasClient {
 
     final confirmFuncId = await _createFunction(app, 'confirmFunc', _confirmFuncSource);
     final resetFuncId = await _createFunction(app, 'resetFunc', _resetFuncSource);
+    final authFuncId = await _createFunction(app, 'authFunc', _authFuncSource);
 
     await enableProvider(app, 'anon-user');
     await enableProvider(app, 'local-userpass', config: '''{
@@ -190,9 +193,8 @@ class BaasClient {
       await enableProvider(app, 'custom-token', config: '''{
           "audience": "mongodb.com",
           "signingAlgorithm": "RS256",
-          "useJWKURI": ${(jwksUrl.isNotEmpty && (confirmationType == "auto")).toString()},
-          "jwkURI": "$jwksUrl"
-          }''', secretConfig: '''{
+          "useJWKURI": false
+           }''', secretConfig: '''{
           "signingKeys": ["$keyName"]
           }''', metadataFelds: '''{
             "required": false,
@@ -240,6 +242,57 @@ class BaasClient {
             "field_name": "company"
           }''');
     }
+    if (confirmationType == null) {
+      await enableProvider(app, 'custom-function', config: '''{
+            "authFunctionName": "authFunc",
+            "authFunctionId": "$authFuncId"
+            }''');
+    
+      const facebookSecret = "876750ac6d06618b323dee591602897f";
+      final dynamic createFacebookSecretResult = await _post('groups/$_groupId/apps/$appId/secrets', '{"name":"facebookSecret","value":"$facebookSecret"}');
+      String facebookClientSecretKeyName = createFacebookSecretResult['name'] as String;
+      await enableProvider(app, 'oauth2-facebook', config: '''{
+          "clientId": "1265617494254819"
+          }''', secretConfig: '''{
+          "clientSecret": "$facebookClientSecretKeyName"
+          }''', metadataFelds: '''{
+            "required": true,
+            "name": "name"
+          },
+          {
+            "required": true,
+            "name": "first_name"
+          },
+          {
+            "required": true,
+            "name": "last_name"
+          },
+          {
+            "required": false,
+            "name": "email"
+          },
+          {
+            "required": false,
+            "name": "gender"
+          },
+          {
+            "required": false,
+            "name": "birthday"
+          },
+          {
+            "required": false,
+            "name": "min_age"
+          },
+          {
+            "required": false,
+            "name": "max_age"
+          },
+          {
+            "required": false,
+            "name": "picture"
+          }''');
+    }
+    
     print('Creating database db_$name$_appSuffix');
 
     await _createMongoDBService(app, '''{

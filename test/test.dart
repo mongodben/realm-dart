@@ -159,21 +159,27 @@ class _Event {
 }
 
 String? testName;
-String rootDir = "";
 Map<String, String?> arguments = {};
 final baasApps = <String, BaasApp>{};
 final _openRealms = Queue<Realm>();
-const String argBaasUrlArgName = "BAAS_URL";
-const String argBaasClusterArgName = "BAAS_CLUSTER";
-const String argBaasApiKeyArgName = "BAAS_API_KEY";
-const String argBaasPrivateApiKeyArgName = "BAAS_PRIVATE_API_KEY";
-const String argBaasProjectIdArgName = "BAAS_PROJECT_ID";
-const String argDifferentiatorArgName = "BAAS_DIFFERENTIATOR";
-const String argJwksUrlArgName = "BAAS_JWKS_URL";
-const String rootTestDirectoryArgName = "rootDir";
+const String argBaasUrl = "BAAS_URL";
+const String argBaasCluster = "BAAS_CLUSTER";
+const String argBaasApiKey = "BAAS_API_KEY";
+const String argBaasPrivateApiKey = "BAAS_PRIVATE_API_KEY";
+const String argBaasProjectId = "BAAS_PROJECT_ID";
+const String argDifferentiator = "BAAS_DIFFERENTIATOR";
 
 String testUsername = "realm-test@realm.io";
 String testPassword = "123456";
+const String publicRSAKeyForJWTValidation = '''-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvNHHs8T0AHD7SJ+CKvVR
+leeJa4wqYTnaVYV+5bX9FmFXVoN+vHbMLEteMvSw4L3kSRZdcqxY7cTuhlpAvkXP
+Yq6qSI+bW8T4jGW963uCc83UhVMx4MH/PzipAlfcPjVO2u4c+dmpgZQpgEmA467u
+tauXUhmTsGpgNg2Gvc61B7Ny4LphshsyrfaJ9WjA/NM6LOmEBW3JPNcVG2qyU+gt
+O8BM8KOSx9wGyoGs4+OusvRkJizhPaIwa3FInLs4r+xZW9Bp6RndsmVECtvXRv5d
+87ztpg6o3DZJRmTp2lAnkNLmxXlFkOSNIwiT3qqyRZOh4DuxPOpfg9K+vtFmRdEJ
+RwIDAQAB
+-----END PUBLIC KEY-----''';
 
 enum AppNames {
   flexible,
@@ -207,10 +213,6 @@ void xtest(String? name, dynamic Function() testFunction) {
 Future<void> setupTests(List<String>? args) async {
   arguments = parseTestArguments(args);
   testName = arguments["name"];
-
-  rootDir = arguments[rootTestDirectoryArgName] ?? "";
-  print("rootDir: $rootDir");
-
   setUpAll(() async => await setupBaas());
 
   setUp(() {
@@ -279,7 +281,7 @@ Future<void> tryDeleteRealm(String path) async {
     }
   }
 
-  // TODO: File deletions does not work after tests so don't fail for now
+  // TODO: File deletions does not work after tests so don't fail for now https://github.com/realm/realm-dart/issues/751
   // throw Exception('Failed to delete realm at path $path. Did you forget to close it?');
 }
 
@@ -287,26 +289,22 @@ Map<String, String?> parseTestArguments(List<String>? arguments) {
   Map<String, String?> testArgs = {};
   final parser = ArgParser()
     ..addOption("name")
-    ..addOption(argBaasUrlArgName)
-    ..addOption(argBaasClusterArgName)
-    ..addOption(argBaasApiKeyArgName)
-    ..addOption(argBaasPrivateApiKeyArgName)
-    ..addOption(argBaasProjectIdArgName)
-    ..addOption(argDifferentiatorArgName)
-    ..addOption(argJwksUrlArgName)
-    ..addOption(rootTestDirectoryArgName);
+    ..addOption(argBaasUrl)
+    ..addOption(argBaasCluster)
+    ..addOption(argBaasApiKey)
+    ..addOption(argBaasPrivateApiKey)
+    ..addOption(argBaasProjectId)
+    ..addOption(argDifferentiator);
 
   final result = parser.parse(arguments ?? []);
   testArgs
     ..addArgument(result, "name")
-    ..addArgument(result, argBaasUrlArgName)
-    ..addArgument(result, argBaasClusterArgName)
-    ..addArgument(result, argBaasApiKeyArgName)
-    ..addArgument(result, argBaasPrivateApiKeyArgName)
-    ..addArgument(result, argBaasProjectIdArgName)
-    ..addArgument(result, argDifferentiatorArgName)
-    ..addArgument(result, argJwksUrlArgName)
-    ..addArgument(result, rootTestDirectoryArgName);
+    ..addArgument(result, argBaasUrl)
+    ..addArgument(result, argBaasCluster)
+    ..addArgument(result, argBaasApiKey)
+    ..addArgument(result, argBaasPrivateApiKey)
+    ..addArgument(result, argBaasProjectId)
+    ..addArgument(result, argDifferentiator);
 
   return testArgs;
 }
@@ -321,24 +319,22 @@ extension on Map<String, String?> {
 }
 
 Future<void> setupBaas() async {
-  final baasUrl = arguments[argBaasUrlArgName];
+  final baasUrl = arguments[argBaasUrl];
   if (baasUrl == null) {
     return;
   }
 
-  final cluster = arguments[argBaasClusterArgName];
-  final apiKey = arguments[argBaasApiKeyArgName];
-  final privateApiKey = arguments[argBaasPrivateApiKeyArgName];
-  final projectId = arguments[argBaasProjectIdArgName];
-  final differentiator = arguments[argDifferentiatorArgName];
-  final jwksUrl = arguments[argJwksUrlArgName];
+  final cluster = arguments[argBaasCluster];
+  final apiKey = arguments[argBaasApiKey];
+  final privateApiKey = arguments[argBaasPrivateApiKey];
+  final projectId = arguments[argBaasProjectId];
+  final differentiator = arguments[argDifferentiator];
 
   final client = await (cluster == null
       ? BaasClient.docker(baasUrl, differentiator)
       : BaasClient.atlas(baasUrl, cluster, apiKey!, privateApiKey!, projectId!, differentiator));
 
-  client.publicRSAKey = File("${rootDir}test_resources/jwt_keys/public_key.pem").readAsStringSync();
-  client.jwksUrl = jwksUrl ?? "";
+  client.publicRSAKey = publicRSAKeyForJWTValidation;
 
   var apps = await client.getOrCreateApps();
   baasApps.addAll(apps);
@@ -351,7 +347,7 @@ Future<void> baasTest(
   AppNames appName = AppNames.flexible,
   dynamic skip,
 }) async {
-  final uriVariable = arguments[argBaasUrlArgName];
+  final uriVariable = arguments[argBaasUrl];
   final url = uriVariable != null ? Uri.tryParse(uriVariable) : null;
 
   if (skip == null) {
@@ -367,7 +363,7 @@ Future<void> baasTest(
 }
 
 Future<AppConfiguration> getAppConfig({AppNames appName = AppNames.flexible}) async {
-  final baasUrl = arguments[argBaasUrlArgName];
+  final baasUrl = arguments[argBaasUrl];
 
   final app = baasApps[appName.name] ??
       baasApps.values.firstWhere((element) => element.name == BaasClient.defaultAppName, orElse: () => throw RealmError("No BAAS apps"));
