@@ -31,6 +31,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - test_resources/
-    - test_resources/jwt_keys/
-    - test_resources/realm_files/
+    - test/data/realm_files/old-format.realm
