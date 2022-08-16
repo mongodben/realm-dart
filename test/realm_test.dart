@@ -694,7 +694,8 @@ Future<void> main([List<String>? args]) async {
     );
 
     // Cannot just add the party of 99, as it transitively updates a lot of existing objects
-    //expect(() => realm.write(() => realm.add(partyOf99)), throwsA(TypeMatcher<RealmException>()));
+    expect(() => realm.write(() => realm.add(partyOf99)), throwsA(TypeMatcher<RealmException>()));
+    expect(partyOf99.isManaged, isFalse);
 
     // So let's use the update flag..
     expect(() => realm.write(() => realm.add(partyOf99, update: true)), returnsNormally);

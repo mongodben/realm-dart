@@ -175,10 +175,10 @@ mixin RealmEntity {
   Realm? _realm;
 
   /// The [Realm] instance this object belongs to.
-  Realm get realm => _realm ?? (throw RealmStateError('$this not managed'));
+  Realm get realm => isManaged ? _realm! : throw RealmStateError('$this not managed');
 
   /// True if the object belongs to a realm.
-  bool get isManaged => _realm != null;
+  bool get isManaged;
 }
 
 extension RealmEntityInternal on RealmEntity {
@@ -229,9 +229,12 @@ mixin RealmObject on RealmEntity {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! RealmObject) return false;
-    if (!isManaged || !other.isManaged) return false;
+    //if (!isManaged || !other.isManaged) return false;
     return realmCore.objectEquals(this, other);
   }
+
+  @override
+  bool get isManaged => _handle != null && realmCore.objectIsValid(this);
 
   /// Gets a value indicating whether this object is managed and represents a row in the database.
   ///
@@ -239,7 +242,7 @@ mixin RealmObject on RealmEntity {
   /// will throw an exception.
   /// The Object is not valid if its [Realm] is closed or object is deleted.
   /// Unmanaged objects are always considered valid.
-  bool get isValid => isManaged ? realmCore.objectIsValid(this) : true;
+  bool get isValid => _accessor is RealmCoreAccessor ? isManaged : true;
 
   /// Allows listening for property changes on this Realm object
   ///

@@ -88,6 +88,9 @@ class ManagedRealmList<T extends Object> extends collection.ListBase<T> with Rea
   void clear() => realmCore.listClear(handle);
 
   @override
+  bool get isManaged => isValid;
+
+  @override
   bool get isValid => realmCore.listIsValid(this);
 }
 
@@ -114,6 +117,9 @@ class UnmanagedRealmList<T extends Object> extends collection.ListBase<T> with R
 
   @override
   void clear() => _unmanaged.clear();
+
+  @override
+  bool get isManaged => false;
 
   @override
   bool get isValid => true;
