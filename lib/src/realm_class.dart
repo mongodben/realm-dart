@@ -481,7 +481,7 @@ class RealmMetadata {
   RealmMetadata._(this.schema, Iterable<RealmObjectMetadata> objectMetadatas)
       : _typeMap = <Type, RealmObjectMetadata>{
           for (final o in objectMetadatas)
-            if (o.type != RealmObject) o.type: o
+            if (o.type != RealmObject) ...{o.schema.nullableType: o, o.type: o} // register for both nullable and non-nullable type
         },
         _stringMap = <String, RealmObjectMetadata>{for (final o in objectMetadatas) o.name: o};
 
@@ -489,7 +489,7 @@ class RealmMetadata {
       _typeMap[type] ??
       (throw RealmError("Object type $type not configured in the current Realm's schema. Add type $type to your config before opening the Realm"));
 
-  RealmObjectMetadata getByStaticType<T extends RealmObject>() => getByType(T);
+  RealmObjectMetadata getByStaticType<T extends RealmObject>() => getByType(typeOf<T?>());
 
   RealmObjectMetadata getByName(String name) =>
       _stringMap[name] ??

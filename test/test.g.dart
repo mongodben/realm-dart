@@ -152,7 +152,7 @@ class Team extends _Team with RealmEntityMixin, RealmObjectMixin {
   @override
   set name(String value) => _nameProperty.setValue(this, value);
 
-  static const _playersProperty = ListProperty<Person>(
+  static const _playersProperty = ListProperty<Person, Person>(
       'players', RealmPropertyType.object,
       linkTarget: 'Person');
   @override
@@ -162,7 +162,7 @@ class Team extends _Team with RealmEntityMixin, RealmObjectMixin {
       throw RealmUnsupportedSetError();
 
   static const _scoresProperty =
-      ListProperty<int>('scores', RealmPropertyType.int);
+      ListProperty<int, int>('scores', RealmPropertyType.int);
   @override
   RealmList<int> get scores => _scoresProperty.getValue(this);
   @override
@@ -290,7 +290,7 @@ class School extends _School with RealmEntityMixin, RealmObjectMixin {
   @override
   set city(String? value) => _cityProperty.setValue(this, value);
 
-  static const _studentsProperty = ListProperty<Student>(
+  static const _studentsProperty = ListProperty<Student, Student>(
       'students', RealmPropertyType.object,
       linkTarget: 'Student');
   @override
@@ -307,7 +307,7 @@ class School extends _School with RealmEntityMixin, RealmObjectMixin {
   set branchOfSchool(covariant School? value) =>
       _branchOfSchoolProperty.setValue(this, value);
 
-  static const _branchesProperty = ListProperty<School>(
+  static const _branchesProperty = ListProperty<School, School>(
       'branches', RealmPropertyType.object,
       linkTarget: 'School');
   @override
@@ -359,9 +359,10 @@ class RemappedClass extends $RemappedClass
   set remappedProperty(String value) =>
       _remappedPropertyProperty.setValue(this, value);
 
-  static const _listPropertyProperty = ListProperty<RemappedClass>(
-      'list-with-dashes', RealmPropertyType.object,
-      linkTarget: 'myRemappedClass');
+  static const _listPropertyProperty =
+      ListProperty<RemappedClass, RemappedClass>(
+          'list-with-dashes', RealmPropertyType.object,
+          linkTarget: 'myRemappedClass');
   @override
   RealmList<RemappedClass> get listProperty =>
       _listPropertyProperty.getValue(this);
@@ -441,8 +442,9 @@ class Schedule extends _Schedule with RealmEntityMixin, RealmObjectMixin {
   @override
   set id(ObjectId value) => throw RealmUnsupportedSetError();
 
-  static const _tasksProperty =
-      ListProperty<Task>('tasks', RealmPropertyType.object, linkTarget: 'Task');
+  static const _tasksProperty = ListProperty<Task, Task>(
+      'tasks', RealmPropertyType.object,
+      linkTarget: 'Task');
   @override
   RealmList<Task> get tasks => _tasksProperty.getValue(this);
   @override
@@ -693,7 +695,7 @@ class LinksClass extends _LinksClass with RealmEntityMixin, RealmObjectMixin {
   @override
   set link(covariant LinksClass? value) => _linkProperty.setValue(this, value);
 
-  static const _listProperty = ListProperty<LinksClass>(
+  static const _listProperty = ListProperty<LinksClass, LinksClass>(
       'list', RealmPropertyType.object,
       linkTarget: 'LinksClass');
   @override
@@ -760,7 +762,7 @@ class AllCollections extends _AllCollections
   AllCollections._();
 
   static const _stringsProperty =
-      ListProperty<String>('strings', RealmPropertyType.string);
+      ListProperty<String, String>('strings', RealmPropertyType.string);
   @override
   RealmList<String> get strings => _stringsProperty.getValue(this);
   @override
@@ -768,7 +770,7 @@ class AllCollections extends _AllCollections
       throw RealmUnsupportedSetError();
 
   static const _boolsProperty =
-      ListProperty<bool>('bools', RealmPropertyType.bool);
+      ListProperty<bool, bool>('bools', RealmPropertyType.bool);
   @override
   RealmList<bool> get bools => _boolsProperty.getValue(this);
   @override
@@ -776,7 +778,7 @@ class AllCollections extends _AllCollections
       throw RealmUnsupportedSetError();
 
   static const _datesProperty =
-      ListProperty<DateTime>('dates', RealmPropertyType.timestamp);
+      ListProperty<DateTime, DateTime>('dates', RealmPropertyType.timestamp);
   @override
   RealmList<DateTime> get dates => _datesProperty.getValue(this);
   @override
@@ -784,7 +786,7 @@ class AllCollections extends _AllCollections
       throw RealmUnsupportedSetError();
 
   static const _doublesProperty =
-      ListProperty<double>('doubles', RealmPropertyType.double);
+      ListProperty<double, double>('doubles', RealmPropertyType.double);
   @override
   RealmList<double> get doubles => _doublesProperty.getValue(this);
   @override
@@ -792,7 +794,7 @@ class AllCollections extends _AllCollections
       throw RealmUnsupportedSetError();
 
   static const _objectIdsProperty =
-      ListProperty<ObjectId>('objectIds', RealmPropertyType.objectid);
+      ListProperty<ObjectId, ObjectId>('objectIds', RealmPropertyType.objectid);
   @override
   RealmList<ObjectId> get objectIds => _objectIdsProperty.getValue(this);
   @override
@@ -800,21 +802,22 @@ class AllCollections extends _AllCollections
       throw RealmUnsupportedSetError();
 
   static const _uuidsProperty =
-      ListProperty<Uuid>('uuids', RealmPropertyType.uuid);
+      ListProperty<Uuid, Uuid>('uuids', RealmPropertyType.uuid);
   @override
   RealmList<Uuid> get uuids => _uuidsProperty.getValue(this);
   @override
   set uuids(covariant RealmList<Uuid> value) =>
       throw RealmUnsupportedSetError();
 
-  static const _intsProperty = ListProperty<int>('ints', RealmPropertyType.int);
+  static const _intsProperty =
+      ListProperty<int, int>('ints', RealmPropertyType.int);
   @override
   RealmList<int> get ints => _intsProperty.getValue(this);
   @override
   set ints(covariant RealmList<int> value) => throw RealmUnsupportedSetError();
 
-  static const _nullableStringsProperty =
-      ListProperty<String?>('nullableStrings', RealmPropertyType.string);
+  static const _nullableStringsProperty = ListProperty<String?, String>(
+      'nullableStrings', RealmPropertyType.string);
   @override
   RealmList<String?> get nullableStrings =>
       _nullableStringsProperty.getValue(this);
@@ -823,15 +826,15 @@ class AllCollections extends _AllCollections
       throw RealmUnsupportedSetError();
 
   static const _nullableBoolsProperty =
-      ListProperty<bool?>('nullableBools', RealmPropertyType.bool);
+      ListProperty<bool?, bool>('nullableBools', RealmPropertyType.bool);
   @override
   RealmList<bool?> get nullableBools => _nullableBoolsProperty.getValue(this);
   @override
   set nullableBools(covariant RealmList<bool?> value) =>
       throw RealmUnsupportedSetError();
 
-  static const _nullableDatesProperty =
-      ListProperty<DateTime?>('nullableDates', RealmPropertyType.timestamp);
+  static const _nullableDatesProperty = ListProperty<DateTime?, DateTime>(
+      'nullableDates', RealmPropertyType.timestamp);
   @override
   RealmList<DateTime?> get nullableDates =>
       _nullableDatesProperty.getValue(this);
@@ -839,8 +842,8 @@ class AllCollections extends _AllCollections
   set nullableDates(covariant RealmList<DateTime?> value) =>
       throw RealmUnsupportedSetError();
 
-  static const _nullableDoublesProperty =
-      ListProperty<double?>('nullableDoubles', RealmPropertyType.double);
+  static const _nullableDoublesProperty = ListProperty<double?, double>(
+      'nullableDoubles', RealmPropertyType.double);
   @override
   RealmList<double?> get nullableDoubles =>
       _nullableDoublesProperty.getValue(this);
@@ -848,8 +851,8 @@ class AllCollections extends _AllCollections
   set nullableDoubles(covariant RealmList<double?> value) =>
       throw RealmUnsupportedSetError();
 
-  static const _nullableObjectIdsProperty =
-      ListProperty<ObjectId?>('nullableObjectIds', RealmPropertyType.objectid);
+  static const _nullableObjectIdsProperty = ListProperty<ObjectId?, ObjectId>(
+      'nullableObjectIds', RealmPropertyType.objectid);
   @override
   RealmList<ObjectId?> get nullableObjectIds =>
       _nullableObjectIdsProperty.getValue(this);
@@ -858,7 +861,7 @@ class AllCollections extends _AllCollections
       throw RealmUnsupportedSetError();
 
   static const _nullableUuidsProperty =
-      ListProperty<Uuid?>('nullableUuids', RealmPropertyType.uuid);
+      ListProperty<Uuid?, Uuid>('nullableUuids', RealmPropertyType.uuid);
   @override
   RealmList<Uuid?> get nullableUuids => _nullableUuidsProperty.getValue(this);
   @override
@@ -866,7 +869,7 @@ class AllCollections extends _AllCollections
       throw RealmUnsupportedSetError();
 
   static const _nullableIntsProperty =
-      ListProperty<int?>('nullableInts', RealmPropertyType.int);
+      ListProperty<int?, int>('nullableInts', RealmPropertyType.int);
   @override
   RealmList<int?> get nullableInts => _nullableIntsProperty.getValue(this);
   @override
@@ -1149,7 +1152,7 @@ class Party extends _Party with RealmEntityMixin, RealmObjectMixin {
   @override
   set year(int value) => _yearProperty.setValue(this, value);
 
-  static const _guestsProperty = ListProperty<Friend>(
+  static const _guestsProperty = ListProperty<Friend, Friend>(
       'guests', RealmPropertyType.object,
       linkTarget: 'Friend');
   @override
@@ -1226,7 +1229,7 @@ class Friend extends _Friend with RealmEntityMixin, RealmObjectMixin {
   set bestFriend(covariant Friend? value) =>
       _bestFriendProperty.setValue(this, value);
 
-  static const _friendsProperty = ListProperty<Friend>(
+  static const _friendsProperty = ListProperty<Friend, Friend>(
       'friends', RealmPropertyType.object,
       linkTarget: 'Friend');
   @override
@@ -1284,7 +1287,7 @@ class Player extends _Player with RealmEntityMixin, RealmObjectMixin {
   set game(covariant Game? value) => _gameProperty.setValue(this, value);
 
   static const _scoresByRoundProperty =
-      ListProperty<int?>('scoresByRound', RealmPropertyType.int);
+      ListProperty<int?, int>('scoresByRound', RealmPropertyType.int);
   @override
   RealmList<int?> get scoresByRound => _scoresByRoundProperty.getValue(this);
   @override
@@ -1318,7 +1321,7 @@ class Game extends _Game with RealmEntityMixin, RealmObjectMixin {
 
   Game._();
 
-  static const _winnerByRoundProperty = ListProperty<Player>(
+  static const _winnerByRoundProperty = ListProperty<Player, Player>(
       'winnerByRound', RealmPropertyType.object,
       linkTarget: 'Player');
   @override

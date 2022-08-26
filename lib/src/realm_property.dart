@@ -126,16 +126,20 @@ class ObjectProperty<LinkT extends RealmObject> extends BaseProperty<LinkT?> {
   bool get optional => true;
 }
 
-class ListProperty<ElementT extends Object?> extends BaseProperty<RealmList<ElementT>> {
+class ListProperty<ElementT extends Object?, LinkT extends Object> extends BaseProperty<RealmList<ElementT>> {
   const ListProperty(super.name, super.propertyType, {super.linkTarget}) : super(collectionType: RealmCollectionType.list);
 
   @override
   RealmList<ElementT> getValue(RealmObject object) {
+    assert(isSubtype<LinkT, ElementT>()); // (T, T?) and (T?, T?) is okay
     return object.accessor.getList<ElementT>(object, name);
   }
 
   @override
   bool get optional => isNullable<ElementT>();
+
+  @override
+  Type get type => LinkT;
 }
 
 class _DynamicProperty implements SchemaProperty {

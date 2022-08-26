@@ -52,8 +52,10 @@ class RealmFieldInfo {
 
   String get basicMappedTypeName => type.basicMappedName;
 
-  String get basicRealmTypeName =>
-      fieldElement.modelType.basicType.asNonNullable.element2?.remappedRealmName ?? fieldElement.modelType.asNonNullable.basicMappedName;
+  String get basicRealmTypeName {
+    final type = fieldElement.modelType.basicType.asNonNullable;
+    return type.element2?.remappedRealmName ?? type.basicMappedName;
+  }
 
   String get modelTypeName => fieldElement.modelTypeName;
 
@@ -64,11 +66,8 @@ class RealmFieldInfo {
   Iterable<String> toCode() sync* {
     final property = '_${name}Property';
     if (realmCollectionType == RealmCollectionType.list) {
-      if (realmType == RealmPropertyType.object) {
-        yield "static const $property = ListProperty<$basicMappedTypeName>('$realmName', $realmType, linkTarget: '$basicRealmTypeName');";
-      } else {
-        yield "static const $property = ListProperty<$basicMappedTypeName>('$realmName', $realmType);";
-      }
+      final linkTarget = realmType == RealmPropertyType.object ? ", linkTarget: '$basicRealmTypeName'" : '';
+      yield "static const $property = ListProperty<$basicMappedTypeName, ${type.basicType.asNonNullable.basicMappedName}>('$realmName', $realmType$linkTarget);";
     } else if (realmType == RealmPropertyType.object) {
       yield "static const $property = ObjectProperty<$basicMappedTypeName>('$realmName', '$basicRealmTypeName');";
     } else {

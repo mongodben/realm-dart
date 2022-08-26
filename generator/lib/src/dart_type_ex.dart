@@ -87,7 +87,7 @@ extension DartTypeEx on DartType {
     return self;
   }
 
-  String get mappedName => mappedType.getDisplayString(withNullability: true);
+  String get mappedName => mappedType.getDisplayString(withNullability: isNullable);
 
   RealmPropertyType? get realmType => _realmType(true);
 
