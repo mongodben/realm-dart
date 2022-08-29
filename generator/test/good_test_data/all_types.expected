@@ -15,6 +15,7 @@ class Foo extends _Foo
   static const _xProperty = ValueProperty<int>(
     'x',
     RealmPropertyType.int,
+    indexed: true,
     defaultValue: 0,
   );
   @override
@@ -36,10 +37,11 @@ class Foo extends _Foo
 class Bar extends _Bar 
     with RealmEntityMixin, RealmObjectMixin<Bar>  {
   Bar(
-    String id,
+    String name,
     bool aBool,
     bool another,
-    ObjectId objectId, {
+    ObjectId id,
+    Uuid uuid, {
     Uint8List data = Uint8List(16),
     DateTime timestamp = DateTime.now(),
     double aDouble = 0.0,
@@ -47,33 +49,35 @@ class Bar extends _Bar
     String? anOptionalString,
     Iterable<int> list = const [],
   }) {
-    _idProperty.setValue(this, id);
+    _nameProperty.setValue(this, name);
     _aBoolProperty.setValue(this, aBool);
     _anotherProperty.setValue(this, another);
     _dataProperty.setInitialValue(this, data);
     _timestampProperty.setInitialValue(this, timestamp);
     _aDoubleProperty.setInitialValue(this, aDouble);
     _fooProperty.setValue(this, foo);
+    _idProperty.setValue(this, id);
+    _uuidProperty.setValue(this, uuid);
     _anOptionalStringProperty.setValue(this, anOptionalString);
-    _objectIdProperty.setValue(this, objectId);
     _listProperty.setValue(this, RealmList<int>(list));
   }
 
   Bar._();
 
-  static const _idProperty = ValueProperty<String>(
-    'id',
+  static const _nameProperty = ValueProperty<String>(
+    'name',
     RealmPropertyType.string,
     primaryKey: true,
   );
   @override
-  String get id => _idProperty.getValue(this);
+  String get name => _nameProperty.getValue(this);
   @override
-  set id(String value) => _idProperty.setValue(this, value);
+  set name(String value) => _nameProperty.setValue(this, value);
 
   static const _aBoolProperty = ValueProperty<bool>(
     'aBool',
     RealmPropertyType.bool,
+    indexed: true,
   );
   @override
   bool get aBool => _aBoolProperty.getValue(this);
@@ -83,6 +87,7 @@ class Bar extends _Bar
   static const _anotherProperty = ValueProperty<bool>(
     'another',
     RealmPropertyType.bool,
+    indexed: true,
   );
   @override
   bool get another => _anotherProperty.getValue(this);
@@ -102,6 +107,7 @@ class Bar extends _Bar
   static const _timestampProperty = ValueProperty<DateTime>(
     'tidspunkt',
     RealmPropertyType.timestamp,
+    indexed: true,
     defaultValue: DateTime.now(),
   );
   @override
@@ -124,6 +130,26 @@ class Bar extends _Bar
   Foo? get foo => _fooProperty.getValue(this);
   @override
   set foo(covariant Foo? value) => _fooProperty.setValue(this, value);
+
+  static const _idProperty = ValueProperty<ObjectId>(
+    'id',
+    RealmPropertyType.objectid,
+    indexed: true,
+  );
+  @override
+  ObjectId get id => _idProperty.getValue(this);
+  @override
+  set id(ObjectId value) => _idProperty.setValue(this, value);
+
+  static const _uuidProperty = ValueProperty<Uuid>(
+    'uuid',
+    RealmPropertyType.uuid,
+    indexed: true,
+  );
+  @override
+  Uuid get uuid => _uuidProperty.getValue(this);
+  @override
+  set uuid(Uuid value) => _uuidProperty.setValue(this, value);
 
   static const _listProperty = ListProperty<int>('list', RealmPropertyType.int);
   @override
@@ -155,18 +181,19 @@ class Bar extends _Bar
     Bar._,
     'Bar',
     {
-      'id': _idProperty,
+      'name': _nameProperty,
       'aBool': _aBoolProperty,
       'another': _anotherProperty,
       'data': _dataProperty,
       'tidspunkt': _timestampProperty,
       'aDouble': _aDoubleProperty,
       'foo': _fooProperty,
+      'id': _idProperty,
+      'uuid': _uuidProperty,
       'list': _listProperty,
       'anOptionalString': _anOptionalStringProperty,
-      'objectId': _objectIdProperty,
     },
-    _idProperty,
+    _nameProperty,
   );
   @override
   SchemaObject get instanceSchema => schema;
