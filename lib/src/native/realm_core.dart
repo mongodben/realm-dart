@@ -146,6 +146,10 @@ class _RealmCore {
             propInfo.flags |= realm_property_flags.RLM_PROPERTY_NULLABLE;
           }
 
+          if (schemaProperty.indexed) {
+            propInfo.flags |= realm_property_flags.RLM_PROPERTY_INDEXED;
+          }
+
           if (schemaProperty.primaryKey) {
             propInfo.flags |= realm_property_flags.RLM_PROPERTY_PRIMARY_KEY;
           }
@@ -2319,6 +2323,7 @@ extension on realm_property_info {
       propertyType: RealmPropertyType.values[type],
       optional: flags & realm_property_flags.RLM_PROPERTY_NULLABLE == realm_property_flags.RLM_PROPERTY_NULLABLE,
       primaryKey: flags & realm_property_flags.RLM_PROPERTY_PRIMARY_KEY == realm_property_flags.RLM_PROPERTY_PRIMARY_KEY,
+      indexed: flags & realm_property_flags.RLM_PROPERTY_INDEXED == realm_property_flags.RLM_PROPERTY_INDEXED,
       linkTarget: linkTarget == null || linkTarget.isEmpty ? null : linkTarget,
       collectionType: RealmCollectionType.values[collection_type],
     );
