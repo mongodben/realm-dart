@@ -134,6 +134,7 @@ class Bar extends _Bar
   static const _anOptionalStringProperty = ValueProperty<String?>(
     'anOptionalString',
     RealmPropertyType.string,
+    indexed: true,
   );
   @override
   String? get anOptionalString => _anOptionalStringProperty.getValue(this);
