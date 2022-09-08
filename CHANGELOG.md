@@ -15,7 +15,9 @@
 ### Internal
 * Uses Realm Core v12.6.0
 
-## 0.4.0+beta (2022-08-19)
+## 0.4.0+beta
+
+Released: 2022-08-19
 
 **This project is in the Beta stage. The API should be quite stable, but occasional breaking changes may be made.**
 
@@ -36,7 +38,9 @@
 ### Internal
 * Uses Realm Core v12.5.1
 
-## 0.3.2+beta (2022-08-16)
+## 0.3.2+beta
+
+Released: 2022-08-16
 
 **This project is in the Beta stage. The API should be quite stable, but occasional breaking changes may be made.**
 
@@ -73,14 +77,18 @@
 * Added a command to `realm_dart` for deleting Atlas App Services applications. Usage: `dart run realm_dart delete-apps`. By default it will delete apps from `http://localhost:9090` which is the endpoint of the local docker image. If `--atlas-cluster` is provided, it will authenticate, delete the application from the provided cluster. (PR [#663](https://github.com/realm/realm-dart/pull/663))
 * Uses Realm Core v12.5.1
 
-## 0.3.1+beta (2022-06-07)
+## 0.3.1+beta
+
+Released: 2022-06-07
 
 **This project is in the Beta stage. The API should be quite stable, but occasional breaking changes may be made.**
 
 ### Fixed
 * Fixed the Url command to correctly encode the SDK version. ([#650](https://github.com/realm/realm-dart/issues/650))
 
-## 0.3.0+beta (2022-06-02)
+## 0.3.0+beta
+
+Released: 2022-06-02
 
 **This project is in the Beta stage. The API should be quite stable, but occasional breaking changes may be made.**
 
@@ -152,7 +160,9 @@
 * Dart ^2.17 on Windows, MacOS and Linux
 * Flutter ^3.0 on Android, iOS, Linux, MacOS and Windows
 
-## 0.2.1+alpha Release notes (2022-03-20)
+## 0.2.1+alpha
+
+Released: 2022-03-20
 
 **This project is in the Alpha stage. All API's might change without warning and no guarantees are given about stability. Do not use it in production.**
 
@@ -275,7 +285,9 @@
 * Dart ^2.15 on Windows, MacOS and Linux
 * Flutter ^2.10 on Android, iOS, Linux, MacOS and Windows
 
-## 0.2.0+alpha Release notes (2022-01-31)
+## 0.2.0+alpha
+
+Released: 2022-01-31
 
 **This project is in the Alpha stage. All API's might change without warning and no guarantees are given about stability. Do not use it in production.**
 
@@ -285,7 +297,9 @@
 ### Compatibility
 * Dart ^2.15 on Windows, MacOS and Linux
 
-## 0.2.0-alpha.2 Release notes (2022-01-29)
+## 0.2.0-alpha.2
+
+Released: 2022-01-29
 
 Notes: This release is a prerelease version. All API's might change without warning and no guarantees are given about stability.
 
@@ -298,7 +312,9 @@ Notes: This release is a prerelease version. All API's might change without warn
 ### Compatibility
 * Dart ^2.15 on Windows, MacOS and Linux
 
-## 0.2.0-alpha.1 Release notes (2022-01-29)
+## 0.2.0-alpha.1
+
+Released: 2022-01-29
 
 Notes: This release is a prerelease version. All API's might change without warning and no guarantees are given about stability.
 
@@ -314,7 +330,9 @@ Notes: This release is a prerelease version. All API's might change without warn
 ### Compatibility
 * Dart ^2.15 on Windows, MacOS and Linux
 
-## 0.2.0-alpha Release notes (2022-01-27)
+## 0.2.0-alpha
+
+Released: 2022-01-27
 
 Notes: This release is a prerelease version. All API's might change without warning and no guarantees are given about stability.
 
@@ -327,7 +345,9 @@ Notes: This release is a prerelease version. All API's might change without warn
 ### Internal
 * Uses Realm Core v11.9.0
 
-## 0.1.1+preview Release notes (2021-04-01)
+## 0.1.1+preview
+
+Released: 2021-04-01
 
 ### Fixed
 * `realm_dart install` command is correctly installing the realm native binary
@@ -336,7 +356,9 @@ Notes: This release is a prerelease version. All API's might change without warn
 * Windows and Mac
 * Dart SDK 2.12 stable from https://dart.dev/
 
-## 0.1.0+preview Release notes (2021-04-01)
+## 0.1.0+preview
+
+Released: 2021-04-01
 
 ### Enhancements
 * The initial preview version of the Realm SDK for Dart.
