@@ -42,6 +42,8 @@ abstract class RealmList<T extends Object?> with RealmEntityMixin implements Lis
   /// and it's parent object hasn't been deleted.
   bool get isValid;
 
+  RealmResults<T> get asResults;
+
   factory RealmList._(RealmListHandle handle, Realm realm, RealmObjectMetadata? metadata) => ManagedRealmList._(handle, realm, metadata);
   factory RealmList(Iterable<T> items) => UnmanagedRealmList(items);
 
@@ -164,6 +166,9 @@ class ManagedRealmList<T extends Object?> with RealmEntityMixin, ListMixin<T> im
     final frozenRealm = realm.freeze();
     return frozenRealm.resolveList(this)!;
   }
+
+  @override
+  RealmResults<T> get asResults => RealmResultsInternal.createFromList(handle, realm, _metadata);
 }
 
 class UnmanagedRealmList<T extends Object?> extends collection.DelegatingList<T> with RealmEntityMixin implements RealmList<T> {
@@ -177,6 +182,9 @@ class UnmanagedRealmList<T extends Object?> extends collection.DelegatingList<T>
 
   @override
   RealmList<T> freeze() => throw RealmStateError("Unmanaged lists can't be frozen");
+
+  @override
+  RealmResults<T> get asResults => throw RealmStateError("Unmanaged lists can't be converted to results");
 }
 
 // The query operations on lists, as well as the ability to subscribe for notifications,
@@ -190,8 +198,7 @@ extension RealmListOfObject<T extends RealmObject<T>> on RealmList<T> {
   /// The Realm Dart and Realm Flutter SDKs supports querying based on a language inspired by [NSPredicate](https://academy.realm.io/posts/nspredicate-cheatsheet/)
   /// and [Predicate Programming Guide.](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Predicates/AdditionalChapters/Introduction.html#//apple_ref/doc/uid/TP40001789)
   RealmResults<T> query(String query, [List<Object> arguments = const []]) {
-    final managedList = asManaged();
-    final handle = realmCore.queryList(managedList, query, arguments);
+    final handle = realmCore.queryList(asManaged, query, arguments);
     return RealmResultsInternal.create<T>(handle, realm, _metadata);
   }
 
@@ -200,9 +207,7 @@ extension RealmListOfObject<T extends RealmObject<T>> on RealmList<T> {
     if (isFrozen) {
       throw RealmStateError('List is frozen and cannot emit changes');
     }
-
-    final managedList = asManaged();
-    final controller = ListNotificationsController<T>(managedList);
+    final controller = ListNotificationsController<T>(asManaged);
     return controller.createStream();
   }
 }
@@ -218,11 +223,11 @@ extension RealmListInternal<T extends Object?> on RealmList<T> {
     }
   }
 
-  ManagedRealmList<T> asManaged() => this is ManagedRealmList<T> ? this as ManagedRealmList<T> : throw RealmStateError('$this is not managed');
+  ManagedRealmList<T> get asManaged => this is ManagedRealmList<T> ? this as ManagedRealmList<T> : throw RealmStateError('$this is not managed');
 
-  RealmListHandle get handle => asManaged()._handle;
+  RealmListHandle get handle => asManaged._handle;
 
-  RealmObjectMetadata? get metadata => asManaged()._metadata;
+  RealmObjectMetadata? get metadata => asManaged._metadata;
 
   static RealmList<T> create<T extends Object?>(RealmListHandle handle, Realm realm, RealmObjectMetadata? metadata) => RealmList<T>._(handle, realm, metadata);
 
