@@ -76,7 +76,7 @@ export 'credentials.dart' show Credentials, AuthProviderType, EmailPasswordAuthP
 export 'list.dart' show RealmList, RealmListOfObject, RealmListChanges;
 export 'realm_object.dart' show RealmEntityMixin, RealmObjectMixin, RealmException, UserCallbackException, RealmObject, RealmObjectChanges, DynamicRealmObject;
 export 'realm_property.dart';
-export 'results.dart' show RealmResults, RealmResultsChanges;
+export 'results.dart' show RealmResults, RealmResultsChanges, RealmResultsOfObject;
 export 'session.dart' show Session, SessionState, ConnectionState, ProgressDirection, ProgressMode, SyncProgress, ConnectionStateChange;
 export 'subscription.dart' show Subscription, SubscriptionSet, SubscriptionSetState, MutableSubscriptionSet;
 export 'user.dart' show User, UserState, UserIdentity;
@@ -580,7 +580,7 @@ class DynamicRealm {
   RealmResults<RealmObject<dynamic>> all(String className) {
     final metadata = _realm._metadata.getByName(className);
     final handle = realmCore.findAll(_realm, metadata.key);
-    return RealmResultsInternal.create<RealmObject>(handle, _realm, metadata);
+    return RealmResultsInternal.create<RealmObject<dynamic>>(handle, _realm, metadata);
   }
 
   /// Fast lookup for a [RealmObject] of type [className] with the specified [primaryKey].
