@@ -128,6 +128,21 @@ class Realm implements Finalizable {
     realmCore.deleteRealmFiles(path);
   }
 
+  static Future<Realm> open(Configuration config, [CancellationToken? token]) async {
+    final realm = Realm(config);
+
+    if (config is FlexibleSyncConfiguration) {
+      try {
+        await realm.syncSession.waitForDownload().asCancellable(token);
+      } catch (e) {
+        realm.close();
+        rethrow;
+      }
+    }
+
+    return realm;
+  }
+
   /// Synchronously checks whether a `Realm` exists at [path]
   static bool existsSync(String path) {
     try {
@@ -556,5 +571,41 @@ class DynamicRealm {
 
     final accessor = RealmCoreAccessor(metadata);
     return RealmObjectInternal.create(RealmObject, _realm, handle, accessor);
+  }
+}
+
+class CancellationToken {
+  final _attached = <Function>[];
+
+  void _attach(Function onCancel) {
+    _attached.add(onCancel);
+  }
+
+  void _detach(Function onCancel) {
+    _attached.remove(onCancel);
+  }
+
+  void cancel() {
+    for (final callback in _attached) {
+      callback();
+    }
+  }
+}
+
+extension CancellableFuture<T> on Future<T> {
+  Future<T> asCancellable(CancellationToken? token) async {
+    final completer = Completer<T>();
+
+    onClose() {
+      completer.completeError(Exception('Canceled')); // TODO
+    }
+
+    token?._attach(onClose);
+
+    try {
+      return await Future.any([completer.future, this]);
+    } finally {
+      token?._detach(onClose);
+    }
   }
 }

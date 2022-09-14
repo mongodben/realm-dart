@@ -641,6 +641,23 @@ Future<void> main([List<String>? args]) async {
     expect(realm.isInTransaction, false);
   });
 
+  baasTest('Realm.open when canceled', (appConfig) async {
+    final app = App(appConfig);
+    final user = await app.logIn(Credentials.anonymous(reuseCredentials: false));
+    final config = Configuration.flexibleSync(user, [Event.schema]);
+    final token = CancellationToken();
+    final future = Realm.open(config, token);
+    token.cancel();
+
+    try {
+      await future;
+      fail('Expected to fail');
+    } catch (err) {
+      expect(err is Exception, true);
+      expect(err.toString(), contains('Canceled'));
+    }
+  });
+
   test('Transitive updates', () {
     final realm = getRealm(Configuration.local([Friend.schema, Party.schema]));
 
