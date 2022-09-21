@@ -34,7 +34,7 @@ abstract class SchemaProperty {
   /// `true` if the property is a primary key.
   bool get primaryKey;
 
-  /// `true` if the property is a primary key.
+  /// `true` if the property is indexed.
   bool get indexed;
 
   /// Defines the [Realm] collection type if this property is a collection.
