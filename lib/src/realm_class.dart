@@ -22,6 +22,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:realm_common/realm_common.dart';
+import 'package:cancellation_token/cancellation_token.dart';
 import 'package:collection/collection.dart';
 
 import 'configuration.dart';
@@ -106,15 +107,10 @@ class Realm implements Finalizable {
   /// and will not update when writes are made to the database.
   late final bool isFrozen;
 
-  /// Returns true if the [Realm] is opened for the first time and the realm file is created.
-  late final bool _openedFirstTime;
-
   /// Opens a `Realm` using a [Configuration] object.
   Realm(Configuration config) : this._(config);
 
-  Realm._(this.config, [RealmHandle? handle, this._isInMigration = false])
-      : _openedFirstTime = !File(config.path).existsSync(),
-        _handle = handle ?? _openRealmSync(config) {
+  Realm._(this.config, [RealmHandle? handle, this._isInMigration = false]) : _handle = handle ?? _openRealmSync(config) {
     _populateMetadata();
     isFrozen = realmCore.isFrozen(this);
   }
@@ -132,29 +128,22 @@ class Realm implements Finalizable {
   /// Returns [Future<Realm>] that completes with the `realm` once the remote realm is fully synchronized or with an `error` if operation is canceled.
   /// When the configuration is [LocalConfiguration] this completes right after the local realm is opened or operation is canceled.
   static Future<Realm> open(Configuration config, {CancellationToken? cancellationToken, ProgressCallback? onProgressCallback}) async {
-    Realm realm = await CancellableFuture.fromFutureFunction<Realm>(() => _open(config, cancellationToken, onProgressCallback), cancellationToken);
-    return realm;
+    final realm = Realm(config);
+    if (config is FlexibleSyncConfiguration) {
+      await _syncWithProgress(realm, onProgressCallback).asCancellable(cancellationToken);
+    }
+    return Future.value(realm).asCancellable(cancellationToken);
   }
 
-  static Future<Realm> _open(Configuration config, CancellationToken? cancellationToken, ProgressCallback? onProgressCallback) async {
-    Realm realm = Realm(config);
-    cancellationToken?.onBeforeCancel(() async {
-      realm.close();
-    });
-
-    if (config is FlexibleSyncConfiguration) {
-      final session = realm.syncSession;
-      if (onProgressCallback != null) {
-        await session
-            .getProgressStream(ProgressDirection.download, ProgressMode.forCurrentlyOutstandingWork)
-            .forEach((s) => onProgressCallback.call(s.transferredBytes, s.transferableBytes));
-      }
-      await session.waitForDownload();
-      if (!realm._openedFirstTime) {
-        await session.waitForUpload();
-      }
+  static Future<void> _syncWithProgress(Realm realm, ProgressCallback? onProgressCallback) async {
+    final session = realm.syncSession;
+    if (onProgressCallback != null) {
+      await session
+          .getProgressStream(ProgressDirection.download, ProgressMode.forCurrentlyOutstandingWork)
+          .forEach((s) => onProgressCallback.call(s.transferredBytes, s.transferableBytes));
     }
-    return realm;
+    await session.waitForDownload();
+    await session.waitForUpload(); // is this needed?
   }
 
   static RealmHandle _openRealmSync(Configuration config) {
@@ -686,79 +675,3 @@ class MigrationRealm extends DynamicRealm {
 /// * `totalBytes` - the total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
 /// {@category Realm}
 typedef ProgressCallback = void Function(int transferredBytes, int totalBytes);
-
-/// An exception being thrown when a cancellable operation is cancelled by calling [CancellationToken.cancel].
-/// {@category Realm}
-class CancelledException implements RealmException {
-  final String message;
-
-  CancelledException(this.message);
-
-  @override
-  String toString() {
-    return message;
-  }
-}
-
-/// [CancellationToken] provides method [cancel] that executes [_onCancel] and [beforeCancel] callbacks.
-/// It is used for canceling long Future operations.
-/// {@category Realm}
-class CancellationToken {
-  bool isCanceled = false;
-  final _attachedCallbacks = <Function>[];
-  final _attachedBeforeCancelCallbacks = <Function>[];
-
-  void _onCancel(Function onCancel) {
-    _attachedCallbacks.add(onCancel);
-  }
-
-  void onBeforeCancel(Function beforeCancel) {
-    _attachedBeforeCancelCallbacks.add(beforeCancel);
-  }
-
-  void cancel() {
-    try {
-      for (final beforeCancelCallback in _attachedBeforeCancelCallbacks) {
-        beforeCancelCallback();
-      }
-      for (final cancelCallback in _attachedCallbacks) {
-        cancelCallback();
-      }
-    } finally {
-      isCanceled = true;
-      _attachedBeforeCancelCallbacks.clear();
-      _attachedCallbacks.clear();
-    }
-  }
-}
-
-/// [CancellableFuture] provides a static method [fromFutureFunction] that builds cancellable Future
-/// from Future function.
-///
-/// fromFutureFunction arguments are:
-/// * `futureFunction`- a function executung a Future that has to be canceled.
-/// * `cancellationToken` - [CancellationToken] that is used to cancel the Future.
-/// * `cancelledMessage` - am optional argument providing reasonable message of [CancelledException] thrown by the Future if the token is canceled.
-/// {@category Realm}
-class CancellableFuture {
-  static Future<T> fromFutureFunction<T>(Future<T> Function() futureFunction, CancellationToken? cancellationToken, {String? cancelledMessage}) async {
-    if (cancellationToken != null) {
-      final cancelException = CancelledException(cancelledMessage ?? "Canceled operation.");
-      final completer = Completer<T>();
-      cancellationToken._onCancel(() {
-        if (!completer.isCompleted) {
-          completer.completeError(cancelException);
-        }
-      });
-      if (cancellationToken.isCanceled) {
-        completer.completeError(cancelException);
-        await completer.future;
-      } else {
-        if (!(completer.isCompleted || cancellationToken.isCanceled)) {
-          return await Future.any([completer.future, futureFunction()]);
-        }
-      }
-    }
-    return await Future.any([futureFunction()]);
-  }
-}
