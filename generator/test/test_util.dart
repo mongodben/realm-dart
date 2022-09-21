@@ -38,7 +38,7 @@ Future<dynamic> generatorTestBuilder(String directoryName, String inputFileName,
 
 Future<Map<String, Object>> getInputFileAsset(String inputFilePath) async {
   var key = 'pkg|$inputFilePath';
-  String inputContent = await File(inputFilePath).readFileAsDartCode();
+  String inputContent = await File(inputFilePath).readAsDartCode();
   return {key: inputContent};
 }
 
@@ -179,7 +179,7 @@ class LinesEqualsMatcher extends Matcher {
 Future<Map<String, Object>> getExpectedFileAsset(String inputFilePath, String expectedFilePath) async {
   var key = 'pkg|${_path.setExtension(inputFilePath, '.realm_objects.g.part')}';
   return {
-    key: myersDiff(await File(expectedFilePath).readFileAsDartCode()),
+    key: myersDiff(await File(expectedFilePath).readAsDartCode()),
   };
 }
 
@@ -195,7 +195,7 @@ extension FileEx on File {
     return LineSplitter.split(content).join('\n');
   }
 
-  Future<String> readFileAsDartCode() async {
+  Future<String> readAsDartCode() async {
     final content = await readAsString(encoding: utf8);
     final formatter = DartFormatter(lineEnding: '\n');
     return formatter.format(content);
