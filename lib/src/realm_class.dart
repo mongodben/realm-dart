@@ -253,7 +253,7 @@ class Realm implements Finalizable {
       return null;
     }
 
-    var object = RealmObjectInternal.create<T>(this, handle, metadata, _isInMigration);
+    var object = RealmObjectInternal.create<T>(this, handle, metadata);
     return object;
   }
 
@@ -398,6 +398,8 @@ extension RealmInternal on Realm {
 
   RealmMetadata get metadata => _metadata;
 
+  bool get isInMigration => _isInMigration;
+
   T? resolveObject<T extends RealmObject<T>>(T object) {
     if (!object.isManaged) {
       throw RealmStateError("Can't resolve unmanaged objects");
@@ -414,7 +416,7 @@ extension RealmInternal on Realm {
 
     final metadata = (object.accessor as RealmCoreAccessor).metadata;
 
-    return RealmObjectInternal.create<T>(this, handle, metadata, _isInMigration);
+    return RealmObjectInternal.create<T>(this, handle, metadata);
   }
 
   void createThenAddOrUpdate<T>(RealmObject<T> object, bool update) {
@@ -590,7 +592,7 @@ class DynamicRealm {
       return null;
     }
 
-    return RealmObjectInternal.create(_realm, handle, metadata, _realm._isInMigration);
+    return RealmObjectInternal.create(_realm, handle, metadata);
   }
 }
 
