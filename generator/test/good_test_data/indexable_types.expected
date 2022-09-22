@@ -159,10 +159,6 @@ class Indexable extends _Indexable
   set aNullableDateTime(DateTime? value) =>
       _aNullableDateTimeProperty.setValue(this, value);
 
-  @override
-  Stream<RealmObjectChanges<Indexable>> get changes =>
-      RealmObjectMixin.getChanges(this);
-
   static const schema = SchemaObject<Indexable>(
     Indexable._,
     'Indexable',
