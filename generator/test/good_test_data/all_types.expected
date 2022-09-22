@@ -168,15 +168,6 @@ class Bar extends _Bar
   set anOptionalString(String? value) =>
       _anOptionalStringProperty.setValue(this, value);
 
-  static const _objectIdProperty = ValueProperty<ObjectId>(
-    'objectId',
-    RealmPropertyType.objectid,
-  );
-  @override
-  ObjectId get objectId => _objectIdProperty.getValue(this);
-  @override
-  set objectId(ObjectId value) => _objectIdProperty.setValue(this, value);
-
   static const schema = SchemaObject<Bar>(
     Bar._,
     'Bar',
