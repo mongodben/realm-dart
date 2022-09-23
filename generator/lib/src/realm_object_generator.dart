@@ -42,9 +42,10 @@ Future<ResolvedLibraryResult?> _getResolvedLibrary(LibraryElement library, Resol
       if (someResult is ResolvedLibraryResult) return someResult;
     } catch (_) {
       ++attempts;
-      if (attempts == 10) {
+      if (attempts == 3) {
+        // 3 is the magic number ¯\_(ツ)_/¯
         log.severe('Internal error: Analysis session '
-            'did not stabilize after ten attempts!');
+            'did not stabilize after $attempts attempts!');
         return null;
       }
     }
