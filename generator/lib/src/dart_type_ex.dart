@@ -50,8 +50,9 @@ extension DartTypeEx on DartType {
   DartType? get nullIfDynamic => isDynamic ? null : this;
 
   DartType get basicType {
-    if (isRealmCollection) {
-      return (this as ParameterizedType).typeArguments.last;
+    final self = this;
+    if (self is ParameterizedType) {
+      return self.typeArguments.last;
     }
     return asNonNullable;
   }

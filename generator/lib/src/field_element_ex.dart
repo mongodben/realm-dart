@@ -177,11 +177,12 @@ extension FieldElementEx on FieldElement {
           todo: todo,
         );
       } else {
-        // Validate collections
-        if (type.isRealmCollection) {
+        // Validate collections and back-links
+        if (type.isRealmCollection || type.isRealmBacklink) {
+          final typeDescription = type.isRealmCollection ? 'collections' : 'back-links';
           if (type.isNullable) {
             throw RealmInvalidGenerationSourceError(
-              'Realm collections cannot be nullable',
+              'Realm $typeDescription cannot be nullable',
               primarySpan: typeSpan(file),
               primaryLabel: 'is nullable',
               todo: '',
@@ -190,7 +191,7 @@ extension FieldElementEx on FieldElement {
           }
           final itemType = type.basicType;
           if (itemType.isRealmModel && itemType.isNullable) {
-            throw RealmInvalidGenerationSourceError('Nullable realm objects are not allowed in collections',
+            throw RealmInvalidGenerationSourceError('Nullable realm objects are not allowed in $typeDescription',
                 primarySpan: typeSpan(file),
                 primaryLabel: 'which has a nullable realm object element type',
                 element: this,
