@@ -7,6 +7,7 @@ import 'package:realm_common/realm_common.dart';
 class _Foo {
   @Indexed()
   int x = 0;
+  late _Bar? bar;
 }
 
 @RealmModel()
@@ -35,6 +36,9 @@ class _Bar {
 
   @Indexed()
   String? anOptionalString;
+
+  @Backlink(#bar)
+  late Iterable<_Foo> foos;
 }
 
 @RealmModel()
