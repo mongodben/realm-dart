@@ -16,7 +16,6 @@
 //
 // //////////////////////////////////////////////////////////////////////////////
 
-
 /// Annotation class used to define `Realm` data model classes and their properties
 ///
 /// {@category Annotations}
@@ -36,7 +35,7 @@ class MapTo {
 }
 
 /// Indicates a primary key property.
-/// 
+///
 /// It enables quick lookup of objects and enforces uniqueness of the values stored.
 /// It may only be applied to a single property in a [RealmModel] class.
 /// Only [String] and [int] can be used as primary keys.
@@ -47,8 +46,8 @@ class PrimaryKey {
   const PrimaryKey();
 }
 
-/// Indicates an indexed property. 
-/// 
+/// Indicates an indexed property.
+///
 /// Indexed properties slightly slow down insertions but can greatly speed up queries.
 ///
 /// {@category Annotations}
@@ -57,10 +56,17 @@ class Indexed {
 }
 
 /// Indicates an ignored property.
-/// 
+///
 /// Ignored properties will not be persisted in the `Realm`.
 ///
 /// {@category Annotations}
 class Ignored {
   const Ignored();
+}
+
+/// Indicates a backlink property.
+/// {@category Annotations}
+class Backlink {
+  final Symbol symbol;
+  const Backlink(this.symbol);
 }
