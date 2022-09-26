@@ -16,10 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import 'package:realm_common/realm_common.dart';
-import 'configuration.dart';
 import 'realm_object.dart';
-import 'list.dart';
+import 'realm_class.dart';
 import 'type_utils.dart';
 
 /// Describes a [RealmObject]'s property with its name, type and other attributes in the [RealmSchema]
@@ -53,10 +51,10 @@ abstract class SchemaProperty {
   Object? get defaultValue;
 
   /// Get value of this property from [object]
-  Object? getValue(RealmObject object);
+  Object? getValue(RealmObject<dynamic> object);
 
   /// Set value of this property on [object]
-  void setValue(RealmObject object, Object? value);
+  void setValue(RealmObject<dynamic> object, Object? value);
 
   factory SchemaProperty.dynamic({
     required String name,
@@ -106,11 +104,11 @@ abstract class BaseProperty<T extends Object?> implements SchemaProperty {
   final T? defaultValue;
 
   @override
-  void setValue(RealmObject object, covariant T value) {
+  void setValue(RealmObject<dynamic> object, covariant T value) {
     object.accessor.set(object, name, value);
   }
 
-  void setInitialValue(RealmObject object, T initialValue) {
+  void setInitialValue(RealmObject<dynamic> object, T initialValue) {
     if (initialValue != defaultValue) setValue(object, initialValue);
   }
 }
@@ -127,7 +125,7 @@ class ValueProperty<T extends Object?> extends BaseProperty<T> {
   });
 
   @override
-  T getValue(RealmObject object) {
+  T getValue(RealmObject<dynamic> object) {
     return (object.accessor.getValue<T>(object, name) ?? defaultValue) as T;
   }
 
@@ -140,7 +138,7 @@ class ObjectProperty<LinkT extends RealmObject<LinkT>> extends BaseProperty<Link
   const ObjectProperty(String name, String linkTarget) : super(name, RealmPropertyType.object, linkTarget: linkTarget);
 
   @override
-  LinkT? getValue(RealmObject object) {
+  LinkT? getValue(RealmObject<dynamic> object) {
     return object.accessor.getObject<LinkT>(object, name);
   }
 
@@ -153,12 +151,28 @@ class ListProperty<ElementT extends Object?> extends BaseProperty<RealmList<Elem
   const ListProperty(super.name, super.propertyType, {super.linkTarget}) : super(collectionType: RealmCollectionType.list);
 
   @override
-  RealmList<ElementT> getValue(RealmObject object) {
+  RealmList<ElementT> getValue(RealmObject<dynamic> object) {
     return object.accessor.getList<ElementT>(object, name);
   }
 
   @override
   bool get optional => isNullable<ElementT>();
+}
+
+/// @nodoc
+class BacklinkProperty<LinkT extends RealmObject<LinkT>> extends BaseProperty<RealmResults<LinkT>> {
+  const BacklinkProperty(super.name, super.propertyType, {super.linkTarget}) : super();
+
+  @override
+  RealmResults<LinkT> getValue(RealmObject<dynamic> object) {
+    throw UnimplementedError();
+  }
+
+  @override
+  void setValue(RealmObject<dynamic> object, Object? value) => throw RealmStateError('Cannot assign to a backlink');
+
+  @override
+  bool get optional => false;
 }
 
 /// @nodoc
@@ -192,7 +206,7 @@ class _DynamicProperty implements SchemaProperty {
   Object? get defaultValue => null;
 
   @override
-  Object? getValue(RealmObject object) {
+  Object? getValue(RealmObject<dynamic> object) {
     final map = propertyType.mapping;
     final accessor = object.accessor;
     if (collectionType == RealmCollectionType.none) {
@@ -208,7 +222,7 @@ class _DynamicProperty implements SchemaProperty {
   }
 
   @override
-  void setValue(RealmObject object, Object? value) {
+  void setValue(RealmObject<dynamic> object, Object? value) {
     object.accessor.set(object, name, value);
   }
 
